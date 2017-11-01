@@ -11,7 +11,7 @@ module.exports = function svgLoader(source) {
     throw new Error('pushSvg is not defined in svgLoader.\nMaybe the plugin SvgSpriteHtmlWebpackPlugin is not set in webpack configuration');
   }
   const svgPath = this.resourcePath;
-  const symbolId = getSymbolId(svgPath);
+  const symbolId = getSymbolId(source);
 
   const svgItem = {
     id: symbolId,

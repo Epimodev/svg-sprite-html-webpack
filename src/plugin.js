@@ -18,10 +18,11 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
  * @param {object} svgItem - svg to push in list of svg to compile
  * @param {string} svgItem.id
  * @param {string} svgItem.path
+ * @param {string} svgItem.content
  * @return {boolean} true if svgItem is already in the list
  */
   isAlreadyInList(svgItem) {
-    const svgItemIndex = this.svgList.findIndex(item => item.path === svgItem.path);
+    const svgItemIndex = this.svgList.findIndex(item => item.id === svgItem.id);
     return svgItemIndex >= 0;
   }
 
@@ -31,6 +32,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @param {object} svgItem - svg to push in list of svg to compile
    * @param {string} svgItem.id
    * @param {string} svgItem.path
+   * @param {string} svgItem.content
    */
   pushSvg(svgItem) {
     if (!this.isAlreadyInList(svgItem)) {

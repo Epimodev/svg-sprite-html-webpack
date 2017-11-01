@@ -1,18 +1,18 @@
-const path = require('path');
 const SVGSpriter = require('svg-sprite');
+const XXHash = require('xxhash');
 const findLast = require('lodash/findLast');
 
 /**
- * Get the symbol id of a svg based on his file name
- * In this plugin, the id of each symbol is the svg file name without the extension
- * @param {string} svgPath - absolute path of imported svg file
+ * Get the symbol id of a svg
+ * In this plugin, the id of each symbol is a hash of svg content
+ * XXHash was selected for it's performance
+ * @param {string} svgContent - svg file content
  * @return {string} the id of svg symbol
  */
-function getSymbolId(svgPath) {
-  const fileName = path.basename(svgPath);
-  const nbChar = fileName.length;
-  const nbCharWithoutExt = nbChar - 4;
-  const id = fileName.substr(0, nbCharWithoutExt);
+function getSymbolId(svgContent) {
+  const buffer = Buffer.from(svgContent, 'utf8');
+  const hash = XXHash.hash(buffer, 0xCAFEBABE);
+  const id = hash.toString();
   return id;
 }
 
