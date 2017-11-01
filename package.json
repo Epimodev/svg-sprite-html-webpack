@@ -1,0 +1,13 @@
+{
+  "name": "svg-sprite-html-webpack",
+  "version": "1.0.0",
+  "description": "Webpack loader and plugin to generate a SVG sprite with <symbol> elements and inject it in html built by html-webpack-plugin",
+  "main": "index.js",
+  "author": "Frederic Godin",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.10.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
+  }
+}
