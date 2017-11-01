@@ -1,18 +1,4 @@
-const path = require('path');
-
-/**
- * Get the symbol id of a svg based on his file name
- * In this plugin, the id of each symbol is the svg file name without the extension
- * @param {string} svgPath - absolute path of imported svg file
- * @return {string} the id of svg symbol
- */
-function getSymbolId(svgPath) {
-  const fileName = path.basename(svgPath);
-  const nbChar = fileName.length;
-  const nbCharWithoutExt = nbChar - 4;
-  const id = fileName.substr(0, nbCharWithoutExt);
-  return id;
-}
+const { getSymbolId } = require('./spriteUtils');
 
 /**
  * WARNING : This loader must be use with SvgSpriteHtmlWebpackPlugin

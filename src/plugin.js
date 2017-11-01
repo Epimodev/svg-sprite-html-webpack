@@ -1,7 +1,11 @@
+const { createSprite } = require('./spriteUtils');
+
 /* eslint-disable no-param-reassign */
 module.exports = class SvgSpriteHtmlWebpackPlugin {
   constructor() {
     this.svgList = [];
+    this.lastCompiledList = this.svgList;
+    this.svgSprite = '';
 
     this.pushSvg = this.pushSvg.bind(this);
     this.processSvg = this.processSvg.bind(this);
@@ -56,11 +60,26 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @param {function} callback function to call when sprite creation and injection is finished
    */
   processSvg(htmlPluginData, callback) {
-    // TODO generate sprite
-    // TODO inject sprite in htmlPluginData.html
-    console.log(htmlPluginData.html);
-    console.log(this.svgList);
-    callback(null, htmlPluginData);
+    const svgListChanged = this.svgList !== this.lastCompiledList;
+
+    if (svgListChanged) {
+      createSprite(this.svgList)
+        .then((svgSprite) => {
+          this.lastCompiledList = this.svgList;
+          this.svgSprite = svgSprite;
+
+          console.log(svgSprite);
+          // TODO inject sprite in htmlPluginData.html
+          callback(null, htmlPluginData);
+        })
+        .catch(console.error);
+
+      // console.log(htmlPluginData.html);
+      // console.log(this.svgList);
+    } else {
+      // TODO inject sprite in htmlPluginData.html
+      callback(null, htmlPluginData);
+    }
   }
 
   /**
