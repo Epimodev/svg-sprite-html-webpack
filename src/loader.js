@@ -11,6 +11,17 @@ function computeSvgHash(svgContent) {
   return hash;
 }
 
+let nextSymbolId = 0;
+/**
+ * computeUniqId of svg symbol
+ * the goal of this function is to create the smallest id
+ */
+function computeUniqId() {
+  const id = nextSymbolId.toString();
+  nextSymbolId += 1;
+  return id;
+}
+
 /**
  * WARNING : This loader must be use with SvgSpriteHtmlWebpackPlugin
  * Webpack loader which create an svgItem object and send it to SvgSpriteHtmlWebpackPlugin
@@ -23,7 +34,7 @@ module.exports = function svgLoader(source) {
   }
   const svgPath = this.resourcePath;
   const svgHash = computeSvgHash(source);
-  const symbolId = svgHash.toString();
+  const symbolId = computeUniqId();
 
   const svgItem = {
     id: symbolId,
