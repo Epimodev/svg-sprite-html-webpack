@@ -17,12 +17,13 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
  * Check if a svg file is already in a list of imported svg
  * @param {object} svgItem - svg to push in list of svg to compile
  * @param {string} svgItem.id
+ * @param {number} svgItem.hash
  * @param {string} svgItem.path
  * @param {string} svgItem.content
  * @return {boolean} true if svgItem is already in the list
  */
   isAlreadyInList(svgItem) {
-    const svgItemIndex = this.svgList.findIndex(item => item.id === svgItem.id);
+    const svgItemIndex = this.svgList.findIndex(item => item.hash === svgItem.hash);
     return svgItemIndex >= 0;
   }
 
@@ -31,6 +32,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * we use spread syntax instead of array.prototype.push to check easier if the svgList change
    * @param {object} svgItem - svg to push in list of svg to compile
    * @param {string} svgItem.id
+   * @param {number} svgItem.hash
    * @param {string} svgItem.path
    * @param {string} svgItem.content
    */

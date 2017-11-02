@@ -1,25 +1,11 @@
 const SVGSpriter = require('svg-sprite');
-const XXHash = require('xxhash');
 const findLast = require('lodash/findLast');
-
-/**
- * Get the symbol id of a svg
- * In this plugin, the id of each symbol is a hash of svg content
- * XXHash was selected for it's performance
- * @param {string} svgContent - svg file content
- * @return {string} the id of svg symbol
- */
-function getSymbolId(svgContent) {
-  const buffer = Buffer.from(svgContent, 'utf8');
-  const hash = XXHash.hash(buffer, 0xCAFEBABE);
-  const id = hash.toString();
-  return id;
-}
 
 /**
  * Create id generator function to inject id from svgList in svg sprite
  * @param {object[]} svgList - list of svg info for sprite creation
  * @param {string} svgList.id
+ * @param {number} svgList.hash
  * @param {string} svgList.path
  * @param {string} svgList.content
  * @return {createIdGenerator~generator}
@@ -45,6 +31,7 @@ function createIdGenerator(svgList) {
  * This allow id generator function to get id generated in svgList
  * @param {object[]} svgList - list of svg info for sprite creation
  * @param {string} svgList.id
+ * @param {number} svgList.hash
  * @param {string} svgList.path
  * @param {string} svgList.content
  * @return {Promise} promise with svg sprite string
@@ -104,6 +91,7 @@ function compileSprite(spriter) {
  * Create a svg sprite with <symbol> elements
  * @param {object[]} svgList - list of svg info for sprite creation
  * @param {string} svgList.id
+ * @param {number} svgList.hash
  * @param {string} svgList.path
  * @param {string} svgList.content
  * @return {Promise} promise with svg sprite string
@@ -118,6 +106,5 @@ function createSprite(svgList) {
 }
 
 module.exports = {
-  getSymbolId,
   createSprite,
 };
