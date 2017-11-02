@@ -36,7 +36,10 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   pushSvg(svgItem) {
     if (!this.isAlreadyInList(svgItem)) {
-      this.svgList = [...this.svgList, svgItem];
+      // avoid to have 2 svg in the list for the same path
+      const listWithoutPreviousItemVersion = this.svgList
+        .filter(item => item.path !== svgItem.path);
+      this.svgList = [...listWithoutPreviousItemVersion, svgItem];
     }
   }
 
