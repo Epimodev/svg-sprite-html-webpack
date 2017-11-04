@@ -47,7 +47,7 @@ import checkmark from './icons/checkmark.svg';
 
 const rendered = `
 <svg>
-  <use xlink:href="#${checkmark}" />
+  <use xlink:href="${checkmark}" />
 </svg>`;
 ```
 
