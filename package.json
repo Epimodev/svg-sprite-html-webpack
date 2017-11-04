@@ -12,6 +12,7 @@
   ],
   "main": "index.js",
   "author": "Frederic Godin",
+  "repository": "Epimodev/svg-sprite-html-webpack",
   "license": "MIT",
   "devDependencies": {
     "eslint": "^4.10.0",
