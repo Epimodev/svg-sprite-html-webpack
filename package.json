@@ -2,6 +2,14 @@
   "name": "svg-sprite-html-webpack",
   "version": "1.0.0",
   "description": "Webpack loader and plugin to generate a SVG sprite with <symbol> elements and inject it in html built by html-webpack-plugin",
+  "keywords": [
+    "svg",
+    "sprite",
+    "svg sprite",
+    "webpack",
+    "webpack loader",
+    "webpack plugin"
+  ],
   "main": "index.js",
   "author": "Frederic Godin",
   "license": "MIT",
