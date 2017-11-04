@@ -10,13 +10,22 @@ Each time we inject an element \<use xlink:href="file.svg#icon" /> in the DOM, a
 
 The goal of this plugin + loader is to avoid those http requests when injecting symbol reference in the DOM.
 
+## Installation
+```bash
+yarn add -D svg-sprite-html-webpack
+
+# or with npm
+
+npm install -D svg-sprite-html-webpack
+```
+
 ## How to use
 This plugin works only with html-webpack-plugin.
 
 #### Webpack configuration :
 ```javascript
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const SvgSpriteHtmlWebpackPlugin = require('../../../open-source/svg-sprite-html-webpack');
+const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
 
 const webpackConfig = {
   ...
