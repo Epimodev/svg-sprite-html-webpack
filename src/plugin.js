@@ -4,7 +4,17 @@ const BODY_TAG = '<body>';
 
 /* eslint-disable no-param-reassign */
 module.exports = class SvgSpriteHtmlWebpackPlugin {
-  constructor() {
+  /**
+   * @constructor
+   * @param {object} options - plugin options
+   * @param {function(string, number, string):string} options.generateSymbolId function which compute id of each symbol.
+   *        arg0 is the svgFilePath.
+   *        arg1 is the svgHash.
+   *        arg2 is the svgContent.
+   */
+  constructor(options = {}) {
+    this.nextSymbolId = 0; // use only by this.generateId
+    this.generateSymbolId = options.generateSymbolId || this.generateSymbolId.bind(this);
     this.svgList = [];
     this.lastCompiledList = this.svgList;
     this.svgSprite = '';
@@ -14,14 +24,28 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
- * Check if a svg file is already in a list of imported svg
- * @param {object} svgItem - svg to push in list of svg to compile
- * @param {string} svgItem.id
- * @param {number} svgItem.hash
- * @param {string} svgItem.path
- * @param {string} svgItem.content
- * @return {boolean} true if svgItem is already in the list
- */
+   * Generate symbol id of a svg in the sprite
+   * this function is not use if options.generateSymbolId is set in constructor
+   * @param {string} svgFilePath - path of the svg file imported
+   * @param {string} svgHash - hash generated with XXHash of the svg content
+   * @param {string} svgContent - imported svg content
+   * @return {string} the id of generated symbol
+   */
+  generateSymbolId() {
+    const id = this.nextSymbolId.toString();
+    this.nextSymbolId += 1;
+    return id;
+  }
+
+  /**
+   * Check if a svg file is already in a list of imported svg
+   * @param {object} svgItem - svg to push in list of svg to compile
+   * @param {string} svgItem.id
+   * @param {number} svgItem.hash
+   * @param {string} svgItem.path
+   * @param {string} svgItem.content
+   * @return {boolean} true if svgItem is already in the list
+   */
   isAlreadyInList(svgItem) {
     const svgItemIndex = this.svgList.findIndex(item => item.hash === svgItem.hash);
     return svgItemIndex >= 0;
@@ -54,7 +78,10 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
       compilation.plugin('normal-module-loader', (loaderContext) => {
         // Give loader access to the list of svg to compile
         // Svg loader will push imported svg paths and ids
-        if (!loaderContext.svgList) loaderContext.pushSvg = this.pushSvg;
+        if (!loaderContext.svgList || !loaderContext.generateSymbolId) {
+          loaderContext.pushSvg = this.pushSvg;
+          loaderContext.generateSymbolId = this.generateSymbolId;
+        }
       });
 
       compilation.plugin('html-webpack-plugin-before-html-processing', this.processSvg);
