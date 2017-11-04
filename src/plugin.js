@@ -26,9 +26,6 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   /**
    * Generate symbol id of a svg in the sprite
    * this function is not use if options.generateSymbolId is set in constructor
-   * @param {string} svgFilePath - path of the svg file imported
-   * @param {string} svgHash - hash generated with XXHash of the svg content
-   * @param {string} svgContent - imported svg content
    * @return {string} the id of generated symbol
    */
   generateSymbolId() {
