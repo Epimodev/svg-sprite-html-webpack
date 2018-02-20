@@ -14,10 +14,15 @@
   "author": "Frederic Godin",
   "repository": "Epimodev/svg-sprite-html-webpack",
   "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
   "devDependencies": {
     "eslint": "^4.10.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jest": "^21.12.2",
+    "jest": "^22.4.0"
   },
   "dependencies": {
     "lodash": "^4.17.4",
