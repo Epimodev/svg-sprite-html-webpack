@@ -80,7 +80,7 @@ function which generate the symbol id of each svg imported.
 example :
 ```javascript
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const SvgSpriteHtmlWebpackPlugin = require('../../../open-source/svg-sprite-html-webpack');
+const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
 
 const webpackConfig = {
   ...
