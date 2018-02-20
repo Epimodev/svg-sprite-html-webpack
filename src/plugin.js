@@ -1,6 +1,7 @@
 const { createSprite } = require('./spriteUtils');
 
-const BODY_TAG = '<body>';
+const BODY_TAG_BEGIN = '<body';
+const BODY_TAG_END = '>';
 
 /* eslint-disable no-param-reassign */
 module.exports = class SvgSpriteHtmlWebpackPlugin {
@@ -91,9 +92,13 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} html with svg sprite
    */
   insertSpriteInHtml(html) {
-    const bodyElementIndex = html.indexOf(BODY_TAG) + BODY_TAG.length;
-    const beforeBodyContent = html.slice(0, bodyElementIndex);
-    const bodyContentAndEnd = html.slice(bodyElementIndex);
+    const bodyOpenTagStart = html.indexOf(BODY_TAG_BEGIN);
+    const hasBodyTag = bodyOpenTagStart >= 0;
+    if (!hasBodyTag) return html;
+
+    const bodyOpenTagEnd = html.indexOf(BODY_TAG_END, bodyOpenTagStart) + 1;
+    const beforeBodyContent = html.slice(0, bodyOpenTagEnd);
+    const bodyContentAndEnd = html.slice(bodyOpenTagEnd);
     const htmlWithSvg = beforeBodyContent + this.svgSprite + bodyContentAndEnd;
     return htmlWithSvg;
   }
