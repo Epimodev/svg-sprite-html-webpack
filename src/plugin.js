@@ -82,7 +82,16 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
         }
       });
 
-      compilation.plugin('html-webpack-plugin-before-html-processing', this.processSvg);
+      if (compilation.hooks) {
+        if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
+          compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('svg-sprite-html-webpack', this.processSvg);
+        } else {
+          console.warn('WARNING : `compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing` is undefined');
+          console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
+        }
+      } else {
+        compilation.plugin('html-webpack-plugin-before-html-processing', this.processSvg);
+      }
     });
   }
 

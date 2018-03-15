@@ -19,10 +19,14 @@ yarn add -D svg-sprite-html-webpack
 npm install -D svg-sprite-html-webpack
 ```
 
+## Compatibility
+- This plugin works with Webpack v3 or Webpack v4
+- This plugin works only with html-webpack-plugin (v2 or v3).
+
 ## How to use
-This plugin works only with html-webpack-plugin.
 
 #### Webpack configuration :
+#### Warning: Since Webpack 4, SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin
 ```javascript
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
@@ -40,11 +44,11 @@ const webpackConfig = {
     ]
   },
   plugins: [
-    new SvgSpriteHtmlWebpackPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'index.html',
     }),
+    new SvgSpriteHtmlWebpackPlugin(),
     ...
   ]
 }
@@ -85,14 +89,14 @@ const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
 const webpackConfig = {
   ...
   plugins: [
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: 'index.html',
+    }),
     new SvgSpriteHtmlWebpackPlugin({
       generateSymbolId: function(svgFilePath, svgHash, svgContent) {
         return svgHash.toString();
       },
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: 'index.html',
     }),
     ...
   ]
