@@ -18,22 +18,9 @@ function computeSvgHash(svgContent) {
  * which is injected by SvgSpriteHtmlWebpackPlugin
  */
 module.exports = function svgLoader(source) {
-  if (!this.pushSvg) {
-    throw new Error('pushSvg is not defined in svgLoader.\nMaybe the plugin SvgSpriteHtmlWebpackPlugin is not set in webpack configuration');
+  if (!this.pushSVGIncomingFile) {
+    throw new Error('pushSVGIncomingFile is not defined in svgLoader.\nMaybe the plugin SvgSpriteHtmlWebpackPlugin is not set in webpack configuration');
   }
-  const svgPath = this.resourcePath;
-  const svgHash = computeSvgHash(source);
-  // generateSymbolId is injected by the plugin SvgSpriteHtmlWebpackPlugin (./plugin)
-  const symbolId = this.generateSymbolId(svgPath, svgHash, source);
 
-  const svgItem = {
-    id: symbolId,
-    hash: svgHash,
-    path: svgPath,
-    content: source,
-  };
-  // pushSvg is injected by the plugin SvgSpriteHtmlWebpackPlugin (./plugin)
-  this.pushSvg(svgItem);
-
-  return `export default '#${symbolId}'`;
+  return this.pushSVGIncomingFile(this.resourcePath, Buffer.from(source, 'utf8'), source);
 };
