@@ -1,6 +1,8 @@
 # SVG sprite html webpack loader and plugin
 Webpack loader and plugin to generate a SVG sprite with \<symbol> elements and inject it in html built by html-webpack-plugin
 
+Original creator @Epimodev. Only adds improvements (such as ability to generate SVG spritesheets on demand without using imports. Also fixes the .tap deprecation warning and uses the new Hooks API. Credits to: [Epimodev/svg-sprite-html-webpack](https://github.com/Epimodev/svg-sprite-html-webpack) :thumbsup::thumbsup::thumbsup:.
+
 ## Advantages :
 - sprite injected at compilation time instead of browser run time
 - svg automaticaly optimize without other loader
