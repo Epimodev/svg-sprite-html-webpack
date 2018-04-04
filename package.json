@@ -1,18 +1,22 @@
 {
-  "name": "svg-sprite-html-webpack",
-  "version": "2.0.0",
+  "name": "svg-sprinter-html-webpack",
+  "version": "2.0.1",
   "description": "Webpack loader and plugin to generate a SVG sprite with <symbol> elements and inject it in html built by html-webpack-plugin",
   "keywords": [
     "svg",
     "sprite",
     "svg sprite",
+    "svg spritesheet",
+    "svg spritesheet generator",
+    "svg icons",
+    "svg icons sheet",
     "webpack",
     "webpack loader",
     "webpack plugin"
   ],
   "main": "index.js",
-  "author": "Frederic Godin",
-  "repository": "Epimodev/svg-sprite-html-webpack",
+  "author": "Radu \"X-Pilot\" Paraschiv & Frederic Godin",
+  "repository": "xpilot/svg-sprite-html-webpack",
   "license": "MIT",
   "scripts": {
     "test": "jest"
@@ -31,6 +35,6 @@
   },
   "peerDependencies": {
     "html-webpack-plugin": "^2.30.1 || ^3.0.6",
-    "webpack": "^3.8.1 || ^4.1.1"
+    "webpack": "^4.1.1"
   }
 }
