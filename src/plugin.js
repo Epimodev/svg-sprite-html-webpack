@@ -1,7 +1,21 @@
+const XXHash = require('xxhash');
 const { createSprite } = require('./spriteUtils');
+
+const loaderPath = require.resolve('./loader.js');
 
 const BODY_TAG_BEGIN = '<body';
 const BODY_TAG_END = '>';
+
+/**
+ * Compute svg hash with XXHash
+ * @param {string} svgContent - svg file content
+ * @return {number} hash of the svg
+ */
+function computeSvgHash(svgContent) {
+  const buffer = Buffer.from(svgContent, 'utf8');
+  const hash = XXHash.hash(buffer, 0xCAFEBABE);
+  return hash;
+}
 
 /* eslint-disable no-param-reassign */
 module.exports = class SvgSpriteHtmlWebpackPlugin {
@@ -15,12 +29,12 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   constructor(options = {}) {
     this.nextSymbolId = 0; // use only by this.generateId
-    this.generateSymbolId = options.generateSymbolId || this.generateSymbolId.bind(this);
+    this.generateSymbolId = options.generateSymbolId || this.generateSymbolId;
     this.svgList = [];
     this.lastCompiledList = this.svgList;
     this.svgSprite = '';
 
-    this.pushSvg = this.pushSvg.bind(this);
+    this.handleFile = this.handleFile.bind(this);
     this.processSvg = this.processSvg.bind(this);
   }
 
@@ -50,6 +64,27 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
+   * Handle file imported by loader
+   * @param {string} content - svg file content
+   * @param {string} path - svg file path
+   * @return {string} javascript export string with svg symbol id
+   */
+  handleFile(content, path) {
+    const svgHash = computeSvgHash(content);
+    const symbolId = this.generateSymbolId(path, svgHash, content);
+
+    const svgItem = {
+      id: symbolId,
+      hash: svgHash,
+      path,
+      content,
+    };
+    this.pushSvg(svgItem);
+
+    return `export default '#${symbolId}'`;
+  }
+
+  /**
    * Add a svg to compile in this.svgList
    * we use spread syntax instead of array.prototype.push to check easier if the svgList change
    * @param {object} svgItem - svg to push in list of svg to compile
@@ -74,11 +109,9 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   apply(compiler) {
     compiler.plugin('compilation', (compilation) => {
       compilation.plugin('normal-module-loader', (loaderContext) => {
-        // Give loader access to the list of svg to compile
-        // Svg loader will push imported svg paths and ids
-        if (!loaderContext.svgList || !loaderContext.generateSymbolId) {
-          loaderContext.pushSvg = this.pushSvg;
-          loaderContext.generateSymbolId = this.generateSymbolId;
+        // Give to loader access to handleFile function
+        if (!loaderContext.handleFile) {
+          loaderContext.handleFile = this.handleFile;
         }
       });
 
@@ -143,6 +176,6 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} - the path of the svg loader
    */
   static getLoader() {
-    return require.resolve('./loader.js');
+    return loaderPath;
   }
 };
