@@ -50,20 +50,6 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
-   * Check if a svg file is already in a list of imported svg
-   * @param {object} svgItem - svg to push in list of svg to compile
-   * @param {string} svgItem.id
-   * @param {number} svgItem.hash
-   * @param {string} svgItem.path
-   * @param {string} svgItem.content
-   * @return {boolean} true if svgItem is already in the list
-   */
-  isAlreadyInList(svgItem) {
-    const svgItemIndex = this.svgList.findIndex(item => item.hash === svgItem.hash);
-    return svgItemIndex >= 0;
-  }
-
-  /**
    * Handle file imported by loader
    * @param {string} content - svg file content
    * @param {string} path - svg file path
@@ -71,22 +57,28 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   handleFile(content, path) {
     const svgHash = computeSvgHash(content);
-    const symbolId = this.generateSymbolId(path, svgHash, content);
+    // search an svg already loaded with the same hash
+    const maybeSvgItem = this.svgList.find(item => item.hash === svgHash);
+    const isAlreadyLoaded = !!maybeSvgItem;
+    const symbolId = isAlreadyLoaded
+      ? maybeSvgItem.id
+      : this.generateSymbolId(path, svgHash, content);
 
-    const svgItem = {
-      id: symbolId,
-      hash: svgHash,
-      path,
-      content,
-    };
-    this.pushSvg(svgItem);
+    if (!isAlreadyLoaded) {
+      const svgItem = {
+        id: symbolId,
+        hash: svgHash,
+        path,
+        content,
+      };
+      this.pushSvg(svgItem);
+    }
 
     return `export default '#${symbolId}'`;
   }
 
   /**
-   * Add a svg to compile in this.svgList
-   * we use spread syntax instead of array.prototype.push to check easier if the svgList change
+   * Add or replace a svg to compile in this.svgList
    * @param {object} svgItem - svg to push in list of svg to compile
    * @param {string} svgItem.id
    * @param {number} svgItem.hash
@@ -94,12 +86,10 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @param {string} svgItem.content
    */
   pushSvg(svgItem) {
-    if (!this.isAlreadyInList(svgItem)) {
-      // avoid to have 2 svg in the list for the same path
-      const listWithoutPreviousItemVersion = this.svgList
-        .filter(item => item.path !== svgItem.path);
-      this.svgList = [...listWithoutPreviousItemVersion, svgItem];
-    }
+    // avoid to have 2 svg in the list for the same path
+    const listWithoutPreviousItemVersion = this.svgList
+      .filter(item => item.path !== svgItem.path);
+    this.svgList = [...listWithoutPreviousItemVersion, svgItem];
   }
 
   /**
