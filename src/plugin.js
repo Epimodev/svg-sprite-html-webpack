@@ -1,3 +1,6 @@
+const path = require('path');
+const fs = require('fs');
+const glob = require('glob');
 const XXHash = require('xxhash');
 const { createSprite } = require('./spriteUtils');
 
@@ -26,16 +29,50 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    *        arg0 is the svgFilePath.
    *        arg1 is the svgHash.
    *        arg2 is the svgContent.
+   * @param {string[]} options.includeFiles - list of file path to include without javascript import
    */
   constructor(options = {}) {
     this.nextSymbolId = 0; // use only by this.generateId
     this.generateSymbolId = options.generateSymbolId || this.generateSymbolId;
+    this.generateSymbolIdOverwritted = !!options.generateSymbolId;
     this.svgList = [];
     this.lastCompiledList = this.svgList;
     this.svgSprite = '';
 
+    if (options.includeFiles) {
+      this.importFiles(options.includeFiles);
+    }
+
     this.handleFile = this.handleFile.bind(this);
     this.processSvg = this.processSvg.bind(this);
+  }
+
+  /**
+   * Include files in svg sprite without javascript import
+   * @param {string[]} includePaths - list of paths to include
+   */
+  importFiles(includePaths) {
+    const filesToInclude = includePaths
+      .reduce((acc, includePath) => {
+        const matchPaths = glob.sync(includePath);
+        if (matchPaths.length === 0) {
+          console.warn(`WARNING : No file match with regex path "${includePath}"`);
+        }
+        return acc.concat(matchPaths);
+      }, [])
+      .map((filePath) => {
+        const absolutePath = path.resolve(filePath);
+        const content = fs.readFileSync(absolutePath, { encoding: 'utf-8' });
+        return {
+          content,
+          filePath: absolutePath,
+        };
+      });
+
+    filesToInclude.forEach(({ content, filePath }) => {
+      const symbolId = path.basename(filePath, '.svg');
+      this.handleFile(content, filePath, symbolId);
+    });
   }
 
   /**
@@ -50,25 +87,46 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
+   * Get symbol id to export in javascript
+   * @param {object} maybeSvgItem - not null if svg is already imported
+   * @param {string} maybeSvgItem.id
+   * @param {string} defaultSymbolId - symbol id to use instead of generate an integer id
+   * @param {string} filePath - svg file path
+   * @param {number} svgHash - svg hash
+   * @param {string} content - svg content
+   * @return {string} symbolId to return in javascript export
+   */
+  getSymbolId(maybeSvgItem, defaultSymbolId, filePath, svgHash, content) {
+    if (maybeSvgItem) return maybeSvgItem.id;
+    if (defaultSymbolId) {
+      if (this.generateSymbolIdOverwritted) {
+        return this.generateSymbolId(filePath, svgHash, content);
+      }
+      return defaultSymbolId;
+    }
+    return this.generateSymbolId(filePath, svgHash, content);
+  }
+
+  /**
    * Handle file imported by loader
    * @param {string} content - svg file content
    * @param {string} path - svg file path
+   * @param {string} defaultSymbolId - symbol id to use instead of generate an integer id
    * @return {string} javascript export string with svg symbol id
    */
-  handleFile(content, path) {
+  handleFile(content, filePath, defaultSymbolId = null) {
     const svgHash = computeSvgHash(content);
     // search an svg already loaded with the same hash
     const maybeSvgItem = this.svgList.find(item => item.hash === svgHash);
     const isAlreadyLoaded = !!maybeSvgItem;
-    const symbolId = isAlreadyLoaded
-      ? maybeSvgItem.id
-      : this.generateSymbolId(path, svgHash, content);
+
+    const symbolId = this.getSymbolId(maybeSvgItem, defaultSymbolId, filePath, svgHash, content);
 
     if (!isAlreadyLoaded) {
       const svgItem = {
         id: symbolId,
         hash: svgHash,
-        path,
+        path: filePath,
         content,
       };
       this.pushSvg(svgItem);
