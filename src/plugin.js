@@ -151,7 +151,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
-   * Function called by webpack during compilation, if hooks are missing ( old webpack)
+   * Function called by webpack during compilation, if hooks are missing (old webpack)
    * @param {object} compiler - webpack compiler
    */
   applyWebpackDeprecated(compiler) {
