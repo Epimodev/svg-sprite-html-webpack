@@ -151,10 +151,10 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
-   * Function called by webpack during compilation
+   * Function called by webpack during compilation, if hooks are missing (old webpack)
    * @param {object} compiler - webpack compiler
    */
-  apply(compiler) {
+  applyWebpackDeprecated(compiler) {
     compiler.plugin('compilation', (compilation) => {
       compilation.plugin('normal-module-loader', (loaderContext) => {
         // Give to loader access to handleFile function
@@ -163,17 +163,42 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
         }
       });
 
-      if (compilation.hooks) {
-        if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
-          compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('svg-sprite-html-webpack', this.processSvg);
-        } else {
-          console.warn('WARNING : `compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing` is undefined');
-          console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
+      compilation.plugin('html-webpack-plugin-before-html-processing', this.processSvg);
+    });
+  }
+
+  /**
+   * Function called by webpack during compilation, if hooks are present (webpack 4+)
+   * @param {object} compiler - webpack compiler
+   */
+  applyWebpack4(compiler) {
+    compiler.hooks.compilation.tap('SvgPlugin', (compilation) => {
+      compilation.hooks.normalModuleLoader.tap('SvgPluginLoader', (loaderContext) => {
+        // Give to loader access to handleFile function
+        if (!loaderContext.handleFile) {
+          loaderContext.handleFile = this.handleFile;
         }
+      });
+
+      if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
+        compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('svg-sprite-html-webpack', this.processSvg);
       } else {
-        compilation.plugin('html-webpack-plugin-before-html-processing', this.processSvg);
+        console.warn('WARNING : `compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing` is undefined');
+        console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
       }
     });
+  }
+
+  /**
+   * Function called by webpack during compilation
+   * @param {object} compiler - webpack compiler
+   */
+  apply(compiler) {
+    if (compiler.hooks) {
+      this.applyWebpack4(compiler);
+    } else {
+      this.applyWebpackDeprecated(compiler);
+    }
   }
 
   /**
