@@ -17,7 +17,7 @@ const BODY_TAG_END = '>';
 function computeSvgHash(svgContent) {
   const buffer = Buffer.from(svgContent, 'utf8');
   const hash = XXHash.h32(buffer, 0xCAFEBABE);
-  return hash.toString(16);
+  return hash.toNumber();
 }
 
 /* eslint-disable no-param-reassign */
