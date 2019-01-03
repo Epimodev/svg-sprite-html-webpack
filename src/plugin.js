@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
-const XXHash = require('xxhash');
+const XXHash = require('xxhashjs');
 const { createSprite } = require('./spriteUtils');
 
 const loaderPath = require.resolve('./loader.js');
@@ -16,8 +16,8 @@ const BODY_TAG_END = '>';
  */
 function computeSvgHash(svgContent) {
   const buffer = Buffer.from(svgContent, 'utf8');
-  const hash = XXHash.hash(buffer, 0xCAFEBABE);
-  return hash;
+  const hash = XXHash.h32(buffer, 0xCAFEBABE);
+  return hash.toString(16);
 }
 
 /* eslint-disable no-param-reassign */
