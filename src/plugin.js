@@ -212,17 +212,18 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} html with svg sprite
    */
   insertSpriteInHtml(html) {
-    const { append } = this;
+    let index = -1;
 
-    const startIndex = append
-      ? html.indexOf(BODY_TAG_CLOSE)
-      : html.indexOf(BODY_TAG_BEGIN);
+    if (this.append) {
+      index = html.indexOf(BODY_TAG_CLOSE);
+    } else {
+      const startIndex = html.indexOf(BODY_TAG_BEGIN);
+      if (startIndex !== -1) {
+        index = html.indexOf(BODY_TAG_END, startIndex) + 1;
+      }
+    }
 
-    if (startIndex === -1) return html;
-
-    const index = append
-      ? startIndex
-      : html.indexOf(BODY_TAG_END, startIndex) + 1;
+    if (index === -1) return html;
 
     const start = html.slice(0, index);
     const end = html.slice(index);
