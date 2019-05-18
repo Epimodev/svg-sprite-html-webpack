@@ -8,6 +8,7 @@ const loaderPath = require.resolve('./loader.js');
 
 const BODY_TAG_BEGIN = '<body';
 const BODY_TAG_END = '>';
+const BODY_TAG_CLOSE = '</body';
 
 /**
  * Compute svg hash with XXHash
@@ -41,6 +42,10 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
 
     if (options.includeFiles) {
       this.importFiles(options.includeFiles);
+    }
+
+    if (options.append) {
+      this.append = options.append;
     }
 
     this.handleFile = this.handleFile.bind(this);
@@ -207,15 +212,22 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} html with svg sprite
    */
   insertSpriteInHtml(html) {
-    const bodyOpenTagStart = html.indexOf(BODY_TAG_BEGIN);
-    const hasBodyTag = bodyOpenTagStart >= 0;
-    if (!hasBodyTag) return html;
+    const { append } = this;
 
-    const bodyOpenTagEnd = html.indexOf(BODY_TAG_END, bodyOpenTagStart) + 1;
-    const beforeBodyContent = html.slice(0, bodyOpenTagEnd);
-    const bodyContentAndEnd = html.slice(bodyOpenTagEnd);
-    const htmlWithSvg = beforeBodyContent + this.svgSprite + bodyContentAndEnd;
-    return htmlWithSvg;
+    const startIndex = append
+      ? html.indexOf(BODY_TAG_CLOSE)
+      : html.indexOf(BODY_TAG_BEGIN);
+
+    if (startIndex === -1) return html;
+
+    const index = append
+      ? startIndex
+      : html.indexOf(BODY_TAG_END, startIndex) + 1;
+
+    const start = html.slice(0, index);
+    const end = html.slice(index);
+
+    return start + this.svgSprite + end;
   }
 
   /**
