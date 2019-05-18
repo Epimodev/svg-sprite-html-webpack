@@ -8,6 +8,7 @@ const loaderPath = require.resolve('./loader.js');
 
 const BODY_TAG_BEGIN = '<body';
 const BODY_TAG_END = '>';
+const BODY_TAG_CLOSE = '</body';
 
 /**
  * Compute svg hash with XXHash
@@ -30,11 +31,13 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    *        arg1 is the svgHash.
    *        arg2 is the svgContent.
    * @param {string[]} options.includeFiles - list of file path to include without javascript import
+   * @param {boolean} options.append - adds the generated svg string before or after the body content
    */
   constructor(options = {}) {
     this.nextSymbolId = 0; // use only by this.generateId
     this.generateSymbolId = options.generateSymbolId || this.generateSymbolId;
     this.generateSymbolIdOverwritted = !!options.generateSymbolId;
+    this.append = options.append || false;
     this.svgList = [];
     this.lastCompiledList = this.svgList;
     this.svgSprite = '';
@@ -207,15 +210,23 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} html with svg sprite
    */
   insertSpriteInHtml(html) {
-    const bodyOpenTagStart = html.indexOf(BODY_TAG_BEGIN);
-    const hasBodyTag = bodyOpenTagStart >= 0;
-    if (!hasBodyTag) return html;
+    let spriteIndex = -1;
 
-    const bodyOpenTagEnd = html.indexOf(BODY_TAG_END, bodyOpenTagStart) + 1;
-    const beforeBodyContent = html.slice(0, bodyOpenTagEnd);
-    const bodyContentAndEnd = html.slice(bodyOpenTagEnd);
-    const htmlWithSvg = beforeBodyContent + this.svgSprite + bodyContentAndEnd;
-    return htmlWithSvg;
+    if (this.append) {
+      spriteIndex = html.indexOf(BODY_TAG_CLOSE);
+    } else {
+      const startIndex = html.indexOf(BODY_TAG_BEGIN);
+      if (startIndex !== -1) {
+        spriteIndex = html.indexOf(BODY_TAG_END, startIndex) + 1;
+      }
+    }
+
+    if (spriteIndex === -1) return html;
+
+    const start = html.slice(0, spriteIndex);
+    const end = html.slice(spriteIndex);
+
+    return start + this.svgSprite + end;
   }
 
   /**

@@ -78,6 +78,43 @@ const icon = (
 
 ## SvgSpriteHtmlWebpackPlugin options
 
+### (optional) append: boolean
+Determines whether the svg string should be inserted before or after the content in the body tag.
+
+example (default behaviour):
+```javascript
+const webpackConfig = {
+  ...
+  new SvgSpriteHtmlWebpackPlugin({
+    append: false
+  }),
+  ...
+```
+Code in your html file :
+```html
+<body>
+<svg>...</svg>
+...
+</body>
+```
+
+reverse example:
+```javascript
+const webpackConfig = {
+  ...
+  new SvgSpriteHtmlWebpackPlugin({
+    append: true
+  }),
+  ...
+```
+Code in your html file :
+```html
+<body>
+...
+<svg>...</svg>
+</body>
+```
+
 ### (optional) includeFiles: string[]
 List of file path to include without javacript import.
 You can use "glob" pattern to include a list of files in a folder (more details here: https://github.com/isaacs/node-glob).
