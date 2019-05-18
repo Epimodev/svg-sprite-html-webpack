@@ -37,16 +37,13 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
     this.nextSymbolId = 0; // use only by this.generateId
     this.generateSymbolId = options.generateSymbolId || this.generateSymbolId;
     this.generateSymbolIdOverwritted = !!options.generateSymbolId;
+    this.append = options.append || false;
     this.svgList = [];
     this.lastCompiledList = this.svgList;
     this.svgSprite = '';
 
     if (options.includeFiles) {
       this.importFiles(options.includeFiles);
-    }
-
-    if (options.append) {
-      this.append = options.append || false;
     }
 
     this.handleFile = this.handleFile.bind(this);
