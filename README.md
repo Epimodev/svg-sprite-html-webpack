@@ -92,12 +92,10 @@ const webpackConfig = {
 ```
 Code in your html file :
 ```html
-...
 <body>
-<svg>
-   <use xlink:href="#checkmark"></use>
-</svg>
+<svg>...</svg>
 ...
+</body>
 ```
 
 reverse example:
@@ -111,12 +109,10 @@ const webpackConfig = {
 ```
 Code in your html file :
 ```html
+<body>
 ...
-<svg>
-   <use xlink:href="#checkmark"></use>
-</svg>
+<svg>...</svg>
 </body>
-...
 ```
 
 ### (optional) includeFiles: string[]

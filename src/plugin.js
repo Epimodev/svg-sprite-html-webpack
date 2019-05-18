@@ -31,6 +31,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    *        arg1 is the svgHash.
    *        arg2 is the svgContent.
    * @param {string[]} options.includeFiles - list of file path to include without javascript import
+   * @param {boolean} options.append - adds the generated svg string before or after the body content
    */
   constructor(options = {}) {
     this.nextSymbolId = 0; // use only by this.generateId
@@ -45,7 +46,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
     }
 
     if (options.append) {
-      this.append = options.append;
+      this.append = options.append || false;
     }
 
     this.handleFile = this.handleFile.bind(this);
@@ -212,21 +213,21 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * @return {string} html with svg sprite
    */
   insertSpriteInHtml(html) {
-    let index = -1;
+    let spriteIndex = -1;
 
     if (this.append) {
-      index = html.indexOf(BODY_TAG_CLOSE);
+      spriteIndex = html.indexOf(BODY_TAG_CLOSE);
     } else {
       const startIndex = html.indexOf(BODY_TAG_BEGIN);
       if (startIndex !== -1) {
-        index = html.indexOf(BODY_TAG_END, startIndex) + 1;
+        spriteIndex = html.indexOf(BODY_TAG_END, startIndex) + 1;
       }
     }
 
-    if (index === -1) return html;
+    if (spriteIndex === -1) return html;
 
-    const start = html.slice(0, index);
-    const end = html.slice(index);
+    const start = html.slice(0, spriteIndex);
+    const end = html.slice(spriteIndex);
 
     return start + this.svgSprite + end;
   }
