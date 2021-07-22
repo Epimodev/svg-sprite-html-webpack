@@ -1,13 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 const XXHash = require('xxhashjs');
 const { createSprite } = require('./spriteUtils');
 
 const loaderPath = require.resolve('./loader.js');
-
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
 
 const BODY_TAG_BEGIN = '<body';
 const BODY_TAG_END = '>';
@@ -51,6 +50,35 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
 
     this.handleFile = this.handleFile.bind(this);
     this.processSvg = this.processSvg.bind(this);
+  }
+
+  /**
+   * Detect the right NormalModule loader
+   * in webpack5 compilation.hooks.normalModuleLoader is deprecated
+   * @param compilation
+   * @return {SyncHook<object, Module>|*}
+   */
+  getNormalLoader(compilation) {
+    if (webpack.hasOwnProperty('NormalModule')) {
+      return webpack.NormalModule.getCompilationHooks(compilation).loader;
+    } else {
+      return compilation.hooks.normalModuleLoader;
+    }
+  }
+
+  /**
+   * Detect the right hook for older version of HtmlWebpackPlugin
+   * @param compilation
+   * @return {null|AsyncSeriesWaterfallHook<{html: string, headTags: HtmlWebpackPlugin.HtmlTagObject[], bodyTags: HtmlWebpackPlugin.HtmlTagObject[], outputName: string, plugin: HtmlWebpackPlugin}>|*}
+   */
+  getHtmlWebpackPluginHook(compilation) {
+    if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
+      return compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing;
+    }
+    if (HtmlWebpackPlugin.hasOwnProperty('getHooks')) {
+      return HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution
+    }
+    return null;
   }
 
   /**
@@ -178,17 +206,17 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   applyWebpack4(compiler) {
     compiler.hooks.compilation.tap('SvgPlugin', (compilation) => {
-
-      webpack.NormalModule.getCompilationHooks(compilation).loader.tap('SvgPluginLoader', (loaderContext) => {
+      this.getNormalLoader(compilation).tap('SvgPluginLoader', (loaderContext) => {
         // Give to loader access to handleFile function
         if (!loaderContext.handleFile) {
           loaderContext.handleFile = this.handleFile;
         }
       })
-      if (HtmlWebpackPlugin.getHooks(compilation).beforeAssetTagGeneration) {
-        HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tapAsync('svg-sprite-html-webpack', this.processSvg);
+      const htmlWebpackPluginHook = this.getHtmlWebpackPluginHook(compilation);
+      if (htmlWebpackPluginHook) {
+        htmlWebpackPluginHook.tapAsync('svg-sprite-html-webpack', this.processSvg);
       } else {
-        console.warn('WARNING : `compilation.hooks.afterTemplateExecution` is undefined');
+        console.warn('WARNING : HtmlWebpackPlugin hook is undefined');
         console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
       }
     });
