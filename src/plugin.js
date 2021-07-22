@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 const XXHash = require('xxhashjs');
 const { createSprite } = require('./spriteUtils');
 
@@ -51,6 +53,35 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   }
 
   /**
+   * Detect the right NormalModule loader
+   * in webpack5 compilation.hooks.normalModuleLoader is deprecated
+   * @param compilation
+   * @return {SyncHook<object, Module>|*}
+   */
+  getNormalLoader(compilation) {
+    if (webpack.hasOwnProperty('NormalModule')) {
+      return webpack.NormalModule.getCompilationHooks(compilation).loader;
+    } else {
+      return compilation.hooks.normalModuleLoader;
+    }
+  }
+
+  /**
+   * Detect the right hook for older version of HtmlWebpackPlugin
+   * @param compilation
+   * @return {null|AsyncSeriesWaterfallHook<{html: string, headTags: HtmlWebpackPlugin.HtmlTagObject[], bodyTags: HtmlWebpackPlugin.HtmlTagObject[], outputName: string, plugin: HtmlWebpackPlugin}>|*}
+   */
+  getHtmlWebpackPluginHook(compilation) {
+    if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
+      return compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing;
+    }
+    if (HtmlWebpackPlugin.hasOwnProperty('getHooks')) {
+      return HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution
+    }
+    return null;
+  }
+
+  /**
    * Include files in svg sprite without javascript import
    * @param {string[]} includePaths - list of paths to include
    */
@@ -71,7 +102,6 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
           filePath: absolutePath,
         };
       });
-
     filesToInclude.forEach(({ content, filePath }) => {
       const symbolId = path.basename(filePath, '.svg');
       this.handleFile(content, filePath, symbolId);
@@ -113,7 +143,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   /**
    * Handle file imported by loader
    * @param {string} content - svg file content
-   * @param {string} path - svg file path
+   * @param {string} filePath - svg file path
    * @param {string} defaultSymbolId - symbol id to use instead of generate an integer id
    * @return {string} javascript export string with svg symbol id
    */
@@ -174,19 +204,19 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * Function called by webpack during compilation, if hooks are present (webpack 4+)
    * @param {object} compiler - webpack compiler
    */
-  applyWebpack4(compiler) {
+  applyWebpack(compiler) {
     compiler.hooks.compilation.tap('SvgPlugin', (compilation) => {
-      compilation.hooks.normalModuleLoader.tap('SvgPluginLoader', (loaderContext) => {
+      this.getNormalLoader(compilation).tap('SvgPluginLoader', (loaderContext) => {
         // Give to loader access to handleFile function
         if (!loaderContext.handleFile) {
           loaderContext.handleFile = this.handleFile;
         }
-      });
-
-      if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
-        compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('svg-sprite-html-webpack', this.processSvg);
+      })
+      const htmlWebpackPluginHook = this.getHtmlWebpackPluginHook(compilation);
+      if (htmlWebpackPluginHook) {
+        htmlWebpackPluginHook.tapAsync('svg-sprite-html-webpack', this.processSvg);
       } else {
-        console.warn('WARNING : `compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing` is undefined');
+        console.warn('WARNING : HtmlWebpackPlugin hook is undefined');
         console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
       }
     });
@@ -198,7 +228,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   apply(compiler) {
     if (compiler.hooks) {
-      this.applyWebpack4(compiler);
+      this.applyWebpack(compiler);
     } else {
       this.applyWebpackDeprecated(compiler);
     }
