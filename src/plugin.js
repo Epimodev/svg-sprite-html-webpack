@@ -6,6 +6,9 @@ const { createSprite } = require('./spriteUtils');
 
 const loaderPath = require.resolve('./loader.js');
 
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+
 const BODY_TAG_BEGIN = '<body';
 const BODY_TAG_END = '>';
 const BODY_TAG_CLOSE = '</body';
@@ -71,7 +74,6 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
           filePath: absolutePath,
         };
       });
-
     filesToInclude.forEach(({ content, filePath }) => {
       const symbolId = path.basename(filePath, '.svg');
       this.handleFile(content, filePath, symbolId);
@@ -113,7 +115,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
   /**
    * Handle file imported by loader
    * @param {string} content - svg file content
-   * @param {string} path - svg file path
+   * @param {string} filePath - svg file path
    * @param {string} defaultSymbolId - symbol id to use instead of generate an integer id
    * @return {string} javascript export string with svg symbol id
    */
@@ -176,17 +178,17 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   applyWebpack4(compiler) {
     compiler.hooks.compilation.tap('SvgPlugin', (compilation) => {
-      compilation.hooks.normalModuleLoader.tap('SvgPluginLoader', (loaderContext) => {
+
+      webpack.NormalModule.getCompilationHooks(compilation).loader.tap('SvgPluginLoader', (loaderContext) => {
         // Give to loader access to handleFile function
         if (!loaderContext.handleFile) {
           loaderContext.handleFile = this.handleFile;
         }
-      });
-
-      if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
-        compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync('svg-sprite-html-webpack', this.processSvg);
+      })
+      if (HtmlWebpackPlugin.getHooks(compilation).beforeAssetTagGeneration) {
+        HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tapAsync('svg-sprite-html-webpack', this.processSvg);
       } else {
-        console.warn('WARNING : `compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing` is undefined');
+        console.warn('WARNING : `compilation.hooks.afterTemplateExecution` is undefined');
         console.info('SvgSpriteHtmlWebpackPlugin must be declare after HtmlWebpackPlugin to works');
       }
     });
