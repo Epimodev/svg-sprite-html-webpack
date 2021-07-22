@@ -204,7 +204,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    * Function called by webpack during compilation, if hooks are present (webpack 4+)
    * @param {object} compiler - webpack compiler
    */
-  applyWebpack4(compiler) {
+  applyWebpack(compiler) {
     compiler.hooks.compilation.tap('SvgPlugin', (compilation) => {
       this.getNormalLoader(compilation).tap('SvgPluginLoader', (loaderContext) => {
         // Give to loader access to handleFile function
@@ -228,7 +228,7 @@ module.exports = class SvgSpriteHtmlWebpackPlugin {
    */
   apply(compiler) {
     if (compiler.hooks) {
-      this.applyWebpack4(compiler);
+      this.applyWebpack(compiler);
     } else {
       this.applyWebpackDeprecated(compiler);
     }
