@@ -20,8 +20,9 @@ npm install -D svg-sprite-html-webpack
 ```
 
 ## Compatibility
-- This plugin works with Webpack v3 or Webpack v4
+- This plugin works with Webpack v3 or Webpack v4.
 - This plugin works only with html-webpack-plugin (v2 or v3).
+- Webpack v5 and html-webpack-plugin v5 compatibilty has been added by contributors [#21](https://github.com/Epimodev/svg-sprite-html-webpack/pull/21) and the plugin is no longer maintained by the author.
 
 ## How to use
 
